@@ -1,57 +1,92 @@
-const specialKeys = {
-    Space: " ",       // Remplacer par un espace réel
-    Enter: "{Enter}", // Touche entrée
-    Tab: "{Tab}",     // Touche tabulation
-    Backspace: "{Backspace}", // Touche backspace
-    Escape: "{Escape}", // Touche échappement
-    Shift: "+",       // Shift
-    Ctrl: "^",        // Contrôle
-    Alt: "!",         // Alt
-    LButton: "{LButton}", // Clic gauche
-    RButton: "{RButton}", // Clic droit
-    // Ajoute d'autres touches ici si nécessaire
-  };
+// Fonction pour générer le fichier .ahk
+export const generateAhk = (macroData) => {
+    const { macroType, actions, fileName, triggerKey, repeatDelay } = macroData;
   
-  const getAHKKey = (key) => {
-    return specialKeys[key] || key; // Si la touche est spéciale, on retourne sa version AHK, sinon on la retourne telle quelle
-  };
+    // Crée le contenu de base du fichier AHK
+    let ahkScript = `
+    ; Script AHK généré automatiquement
+    #Persistent
+    #SingleInstance Force
+    SetTitleMatchMode, 2
+    `;
   
-  export const generateAhk = ({ macroType, actions, fileName, triggerKey, repeatDelay }) => {
-    let ahkScript = `; AutoHotkey Script for Macro\n#Persistent\n#SingleInstance Force\n\n`;
-    
-    // Variable pour gérer l'effet de toggle (pause/play)
-    ahkScript += `global toggle := false\n`;
+    // Vérifier que la touche de déclenchement existe
+    if (triggerKey) {
+      ahkScript += `
+      ; Définir la touche de déclenchement pour activer/désactiver la macro
+      ${triggerKey}::
+      Toggle := !Toggle
+      If Toggle {
+        SoundBeep, 750, 200 ; Son lors de l'activation
+        SetTimer, RunMacro, ${repeatDelay || 20} ; Démarrer la macro avec répétition si en mode infini
+      } Else {
+        SoundBeep, 500, 200 ; Son lors de la pause
+        SetTimer, RunMacro, Off
+      }
+      Return
+      `;
+    }
   
-    // Définir la touche déclencheuse
-    ahkScript += `${getAHKKey(triggerKey)}::\n`;
-    ahkScript += `if (toggle) {\n`;
-    ahkScript += `  SetTimer, SpamMacro, Off\n`; // Désactiver la boucle
-    ahkScript += `  toggle := false\n`;          // Mettre la variable à "false"
-    ahkScript += `  return\n`;
-    ahkScript += `} else {\n`;
-    ahkScript += `  SetTimer, SpamMacro, 20\n`;  // Activer la boucle
-    ahkScript += `  toggle := true\n`;           // Mettre la variable à "true"
-    ahkScript += `  return\n`;
-    ahkScript += `}\n\n`;
+    // Fonction principale pour exécuter la macro
+    ahkScript += `
+    RunMacro:
+    `;
   
-    // Mode infini : Boucle sur les actions avec effet toggle
-    ahkScript += `SpamMacro:\n`;
-    actions.forEach((action) => {
-      ahkScript += `Send, ${getAHKKey(action.key)}\n`; // Envoie la touche
-      ahkScript += `Sleep, ${action.delay}\n`;         // Attendre le délai spécifié
+    // Vérifier et ajouter les actions dans le fichier AHK
+    actions.forEach((action, index) => {
+      if (action.key) {
+        // Traitement spécial pour les touches
+        let keyToSend;
+  
+        switch (action.key) {
+          case 'Space':
+            keyToSend = '{Space}';
+            break;
+          case 'Enter':
+            keyToSend = '{Enter}';
+            break;
+          case 'Tab':
+            keyToSend = '{Tab}';
+            break;
+          case 'Shift':
+            keyToSend = '+';
+            break;
+          case 'Ctrl':
+            keyToSend = '^';
+            break;
+          case 'Alt':
+            keyToSend = '!';
+            break;
+          case 'LButton':
+            keyToSend = '{LButton}'; // Clic gauche
+            break;
+          case 'RButton':
+            keyToSend = '{RButton}'; // Clic droit
+            break;
+          case 'MButton':
+            keyToSend = '{MButton}'; // Clic milieu
+            break;
+          default:
+            keyToSend = action.key; // Gérer les autres touches normalement
+            break;
+        }
+  
+        ahkScript += `Send, ${keyToSend}\n`;
+        ahkScript += `Sleep, ${action.delay || 200}\n`; // Ajouter le délai entre chaque action
+      }
     });
-    ahkScript += `Sleep, ${repeatDelay}\n`;            // Délai entre chaque répétition de la boucle
-    ahkScript += `return\n`;
   
-    // Fin du script
-    ahkScript += `return\n`;
+    if (macroType === 'infinite') {
+      ahkScript += `Return\n`;
+    } else {
+      ahkScript += `ExitApp\n`; // Quitte le script après la première exécution pour les macros non infinies
+    }
   
-    // Générer le fichier AHK
-    const blob = new Blob([ahkScript], { type: 'text/plain;charset=utf-8' });
-    const fileNameWithExt = `${fileName}.ahk`;
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileNameWithExt;
-    a.click();
+    // Sauvegarder le fichier avec l'extension .ahk
+    const blob = new Blob([ahkScript], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}.ahk`;
+    link.click();
   };
   
