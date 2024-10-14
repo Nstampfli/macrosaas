@@ -97,7 +97,7 @@ const MacroForm = ({ onGenerate }) => {
       window.removeEventListener('keydown', handleKeyCapture);
       window.removeEventListener('mousedown', handleKeyCapture);
     };
-  }, [isListening, isListeningTrigger]);
+  }, [isListening, isListeningTrigger, handleKeyCapture]);
 
   return (
     <section id="macro-form" className="w-full max-w-2xl mx-auto mt-16">

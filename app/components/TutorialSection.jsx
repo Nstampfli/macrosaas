@@ -22,7 +22,7 @@ const TutorialSection = () => {
         <div className="mb-8">
           <h3 className="text-xl font-semibold text-primary">3. Download and Run</h3>
           <p className="text-gray-300 mt-2">
-            Click "Generate Macro File" to download the .ahk file. Then, simply double-click the file to run your macro.
+            Click &quot;Generate Macro File&quot; to download the .ahk file. Then, simply double-click the file to run your macro.
           </p>
         </div>
 
@@ -30,7 +30,7 @@ const TutorialSection = () => {
           <h3 className="text-xl font-semibold text-primary">4. Stop the Macro</h3>
           <p className="text-gray-300 mt-2">
             To stop the macro easily, find the AutoHotkey icon in the system tray by clicking the small arrow on the right of your taskbar.
-            Right-click the AutoHotkey logo and select "Exit" to stop the script.
+            Right-click the AutoHotkey logo and select &quot;Exit&quot; to stop the script.
           </p>
         </div>
       </div>
